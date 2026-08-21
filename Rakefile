@@ -11,14 +11,6 @@ task :environment do
   require_relative "lib/manual_vectorizer/workspace_service"
 end
 
-namespace :master do
-  desc "Rebuild master vector sheet from catalog.json / catalog snapshot"
-  task rebuild: :environment do
-    master = ManualVectorizer::WorkspaceService.rebuild_master_sheet!(force: true)
-    puts "Master sheet #{master.id}: #{master.definition['vectors'].length} vectors, #{master.definition['types'].length} types"
-  end
-end
-
 namespace :db do
   desc "Run pending migrations"
   task migrate: :migrate_app
@@ -29,7 +21,7 @@ namespace :db do
     puts "Migrations complete."
   end
 
-  desc "Seed catalog from data/catalog.json and bootstrap admin"
+  desc "Ensure admin user exists (no catalog or master sheet changes)"
   task :seed do
     require_relative "lib/manual_vectorizer/seeds"
     ManualVectorizer::Seeds.run!

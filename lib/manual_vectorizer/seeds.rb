@@ -21,8 +21,6 @@ module ManualVectorizer
         warn "Admin bootstrap skipped: #{result[:error]}"
       end
 
-      bootstrap_catalog!
-      WorkspaceService.rebuild_master_sheet!
     end
 
     # Boot-time only: create the first admin account. Never overwrite passwords.
@@ -75,22 +73,5 @@ module ManualVectorizer
       { ok: true, email: email, auth_ok: auth_ok }
     end
 
-    def bootstrap_catalog!
-      existing = CatalogSnapshot.active_catalog
-      if existing
-        data = existing.catalog_data
-        return if data["skills"]&.any?
-      end
-
-      path = File.expand_path("../../data/catalog.json", __dir__)
-      unless File.exist?(path)
-        warn "No data/catalog.json — skipping catalog seed"
-        return
-      end
-
-      data = JSON.parse(File.read(path, encoding: "UTF-8"))
-      CatalogSnapshot.publish!(data, label: "initial")
-      puts "Seeded catalog from data/catalog.json"
-    end
   end
 end

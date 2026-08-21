@@ -126,7 +126,10 @@ module ManualVectorizer
     one_to_many :log_entries, class: "ManualVectorizer::VectorLogEntry", key: :sheet_id
 
     def definition
-      JsonColumn.parse(self[:definition])
+      data = JsonColumn.parse(self[:definition])
+      return data unless data.is_a?(Hash)
+
+      JSON.parse(JSON.generate(data))
     end
 
     def before_create

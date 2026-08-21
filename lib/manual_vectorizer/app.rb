@@ -25,7 +25,6 @@ module ManualVectorizer
     if ENV.fetch("RACK_ENV", "development") == "production"
       require_relative "seeds"
       Seeds.run!
-      WorkspaceService.migrate_legacy_users!
     end
   end
 
@@ -127,8 +126,6 @@ module ManualVectorizer
       status status
       payload.to_json
     end
-
-    # --- Auth pages ---
 
     get "/bootstrap-admin" do
       token = params[:token].to_s
