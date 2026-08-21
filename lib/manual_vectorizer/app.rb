@@ -15,14 +15,21 @@ module ManualVectorizer
     Sequel::Model.db = Database.connect!
 
     require_relative "models"
+    require_relative "sheet_definition"
+    require_relative "sheet_merge"
+    require_relative "ranking_import"
+    require_relative "workspace_service"
+    require_relative "sheet_routes"
 
     if ENV.fetch("RACK_ENV", "development") == "production"
       require_relative "seeds"
       Seeds.run!
+      WorkspaceService.migrate_legacy_users!
     end
   end
 
   class App < Sinatra::Base
+    register SheetRoutes
     helpers Sinatra::ContentFor
 
     helpers do
@@ -200,6 +207,7 @@ module ManualVectorizer
 
       user = User.create_account!(email: email, password: password)
       code.redeem!(user: user)
+      WorkspaceService.provision_user!(user) if Database.connected?
       session[:user_id] = user.id
       redirect "/"
     end
@@ -252,6 +260,21 @@ module ManualVectorizer
       send_file File.join(settings.public_folder, "weights.html")
     end
 
+    get "/edit.html" do
+      require_login!
+      send_file File.join(settings.public_folder, "edit.html")
+    end
+
+    get "/log.html" do
+      require_login!
+      send_file File.join(settings.public_folder, "log.html")
+    end
+
+    get "/merge.html" do
+      require_login!
+      send_file File.join(settings.public_folder, "merge.html")
+    end
+
     get "/results.html" do
       require_login!
       send_file File.join(settings.public_folder, "results.html")
@@ -299,23 +322,21 @@ module ManualVectorizer
 
     get "/api/catalog" do
       require_login!
-      snapshot = CatalogSnapshot.active_catalog
-      halt 503, json_error("Catalog not loaded", status: 503) unless snapshot
-
-      json_ok(snapshot.data)
+      catalog = WorkspaceService.active_catalog_for(current_user)
+      sheet = WorkspaceService.active_sheet_for(current_user)
+      catalog["sheet"] = { "id" => sheet.id, "name" => sheet.name, "is_master" => sheet.is_master }
+      json_ok(catalog)
     end
 
     get "/api/session" do
       require_login!
-      row = UserState.for_user(current_user)
-      json_ok(row.parsed_state)
+      json_ok(WorkspaceService.draft_state_for(current_user))
     end
 
     put "/api/session" do
       require_login!
       body = JSON.parse(request.body.read)
-      row = UserState.for_user(current_user)
-      row.update_state!(body)
+      WorkspaceService.save_draft!(current_user, body)
       json_ok({ ok: true })
     rescue JSON::ParserError
       json_error("Invalid JSON body")
@@ -323,11 +344,9 @@ module ManualVectorizer
 
     get "/data/catalog.json" do
       require_login!
-      snapshot = CatalogSnapshot.active_catalog
-      halt 404 unless snapshot
-
+      catalog = WorkspaceService.active_catalog_for(current_user)
       content_type :json
-      JSON.pretty_generate(snapshot.data) + "\n"
+      JSON.pretty_generate(catalog) + "\n"
     end
 
     not_found do

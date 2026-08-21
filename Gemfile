@@ -12,6 +12,7 @@ gem "pg", "~> 1.5"
 gem "bcrypt", "~> 3.1"
 gem "rake", "~> 13.2"
 gem "rack", "~> 3.1"
+gem "yaml", "~> 0.4"
 
 group :development do
   gem "sqlite3", "~> 2.5"

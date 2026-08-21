@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Edit Sheet — Manual Vectorizer</title>
+  <link rel="stylesheet" href="css/app.css" />
+</head>
+<body>
+  <header>
+    <h1>Manual Vectorizer</h1>
+    <nav>
+      <a href="/">Vectorize</a>
+      <a href="/weights.html">Weights</a>
+      <a href="/results.html">Results</a>
+      <a href="/edit.html" class="active">Edit</a>
+      <a href="/log.html">Log</a>
+      <a href="/merge.html">Merge</a>
+    </nav>
+  </header>
+
+  <main class="editor-page">
+    <div class="editor-toolbar">
+      <h2 id="sheet-title">Sheet editor</h2>
+      <div class="editor-actions">
+        <label>Similarity threshold
+          <input type="range" id="threshold" min="0.5" max="1" step="0.01" value="0.85" />
+          <span id="threshold-val">0.85</span>
+        </label>
+        <button type="button" class="btn" id="validate-btn">Validate</button>
+        <button type="button" class="btn" id="import-btn">Import file</button>
+        <button type="button" class="btn" id="export-btn">Export bundle</button>
+        <button type="button" class="btn btn-primary" id="save-btn">Save</button>
+      </div>
+    </div>
+
+    <div class="editor-panels">
+      <section class="editor-panel">
+        <h3>YAML definition</h3>
+        <textarea id="yaml-editor" spellcheck="false" aria-label="Sheet YAML"></textarea>
+      </section>
+      <section class="editor-panel">
+        <h3>Vectors (reorder)</h3>
+        <ul id="vector-list" class="vector-reorder-list"></ul>
+      </section>
+      <section class="editor-panel">
+        <h3>Validation</h3>
+        <pre id="validation-output" class="validation-output">Run validate to check duplicates and similarity.</pre>
+      </section>
+    </div>
+  </main>
+
+  <input type="file" id="import-file" accept=".json,.yaml,.yml" hidden />
+
+  <footer id="catalog-source" class="catalog-source"></footer>
+
+  <script type="module" src="js/auth-nav.js"></script>
+  <script type="module" src="js/edit.js"></script>
+</body>
+</html>

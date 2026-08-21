@@ -7,6 +7,16 @@
 <form method="post" action="/admin/invites">
   <button type="submit" class="btn btn-primary">Generate invite code</button>
 </form>
+
+<section class="admin-invites">
+  <h2>Master sheet</h2>
+  <p class="auth-lead">Update the canonical master sheet or create a temples sample for merge testing.</p>
+  <p>
+    <a href="/edit.html" class="btn">Edit active sheet</a>
+    <button type="button" class="btn" id="create-temples-sample">Create temples sample sheet</button>
+  </p>
+</section>
+
 <section class="admin-invites">
   <h2>Recent invites</h2>
   <table>
@@ -26,3 +36,10 @@
   </table>
 </section>
 <p class="auth-foot"><a href="/">Vectorizer</a> · <a href="/account">Account</a> · <form method="post" action="/logout" style="display:inline"><button type="submit" class="btn-link">Log out</button></form></p>
+<script>
+document.getElementById("create-temples-sample")?.addEventListener("click", async () => {
+  const res = await fetch("/api/admin/temples-sample", { method: "POST", credentials: "same-origin" });
+  const data = await res.json();
+  alert(res.ok ? "Created: " + data.name : (data.error || "Failed"));
+});
+</script>

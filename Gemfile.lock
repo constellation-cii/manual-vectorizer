@@ -52,6 +52,7 @@ GEM
     sqlite3 (2.9.6-x86_64-linux-gnu)
     sqlite3 (2.9.6-x86_64-linux-musl)
     tilt (2.9.0)
+    yaml (0.4.0)
 
 PLATFORMS
   aarch64-linux
@@ -63,6 +64,7 @@ PLATFORMS
   x86-linux-gnu
   x86-linux-musl
   x86_64-darwin
+  x86_64-linux
   x86_64-linux-gnu
   x86_64-linux-musl
 
@@ -76,6 +78,7 @@ DEPENDENCIES
   sinatra (~> 4.1)
   sinatra-contrib (~> 4.1)
   sqlite3 (~> 2.5)
+  yaml (~> 0.4)
 
 RUBY VERSION
    ruby 3.4.10p104

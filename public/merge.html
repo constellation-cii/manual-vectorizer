@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Merge — Manual Vectorizer</title>
+  <link rel="stylesheet" href="css/app.css" />
+</head>
+<body>
+  <header>
+    <h1>Manual Vectorizer</h1>
+    <nav>
+      <a href="/">Vectorize</a>
+      <a href="/weights.html">Weights</a>
+      <a href="/results.html">Results</a>
+      <a href="/edit.html">Edit</a>
+      <a href="/log.html">Log</a>
+      <a href="/merge.html" class="active">Merge</a>
+    </nav>
+  </header>
+
+  <main class="editor-page">
+    <h2>Merge guest sheet into active sheet</h2>
+    <p class="auth-lead">Import a sheet bundle or YAML, preview conflicts, then apply.</p>
+
+    <div class="editor-actions">
+      <input type="file" id="guest-file" accept=".json,.yaml,.yml" />
+      <label><input type="checkbox" id="overwrite-descriptions" /> Overwrite descriptions on match</label>
+      <select id="conflict-policy">
+        <option value="">Prompt per conflict (preview only)</option>
+        <option value="skip_all">Skip all description conflicts</option>
+        <option value="yes_all">Yes to all description conflicts</option>
+      </select>
+      <button type="button" class="btn" id="preview-btn">Preview merge</button>
+      <button type="button" class="btn btn-primary" id="apply-btn">Apply merge</button>
+    </div>
+
+    <textarea id="type-map" rows="4" placeholder='Type map JSON e.g. {"guest-type-id": {"mbti":"INTJ","development":"SD"}}'></textarea>
+    <pre id="merge-report" class="validation-output">Load a guest sheet to preview.</pre>
+  </main>
+
+  <script type="module" src="js/auth-nav.js"></script>
+  <script type="module" src="js/merge.js"></script>
+</body>
+</html>

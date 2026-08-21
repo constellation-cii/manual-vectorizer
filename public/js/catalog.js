@@ -23,9 +23,11 @@ export function showCatalogSource(catalog, elementId) {
   const el = document.getElementById(elementId);
   if (!el) return;
 
+  const sheetName = catalog.sheet?.name;
   const host = catalog.built_on || "server catalog";
   const when = catalog.built_at ? new Date(catalog.built_at).toLocaleString() : "unknown time";
   const count = catalog.skill_count ?? catalog.skills?.length ?? "?";
+  const sheetPart = sheetName ? `Sheet: ${sheetName} · ` : "";
 
-  el.textContent = `Catalog: ${host} · ${count} skills · ${when}`;
+  el.textContent = `${sheetPart}${count} skills · ${when}`;
 }
