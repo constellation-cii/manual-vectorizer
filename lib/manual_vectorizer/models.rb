@@ -26,7 +26,7 @@ module ManualVectorizer
     def self.authenticate(email, password)
       user = find(email: email.to_s.strip.downcase)
       return nil unless user
-      return nil unless BCrypt::Password.new(user.password_digest) == password.to_s
+      return nil unless BCrypt::Password.new(user.password_digest) == password.to_s.strip
 
       user
     end
