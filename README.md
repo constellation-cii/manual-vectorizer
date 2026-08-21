@@ -65,6 +65,8 @@ Spec: [`.do/app.yaml`](.do/app.yaml)
 | GET/PUT | `/api/session` | Workspace draft state |
 | GET | `/api/sheets` | List accessible sheets |
 | GET/PUT | `/api/sheets/:id` | Load/save sheet definition |
+| POST | `/api/sheets` | Create sheet (optional fork_from_id) |
+| POST | `/api/sheets/:id/clone` | Clone accessible sheet into your workspace |
 | DELETE | `/api/sheets/:id` | Delete sheet (owner or admin) |
 | POST | `/api/sheets/:id/validate` | Duplicates + similarity report |
 | GET | `/api/sheets/:id/export` | Sheet bundle export |

@@ -59,6 +59,22 @@ module ManualVectorizer
         json_error("Invalid JSON body")
       end
 
+      app.post "/api/sheets/:id/clone" do
+        require_login!
+        sheet = VectorSheet.accessible_by(current_user).first(id: params[:id].to_i)
+        halt 404, json_error("Not found", status: 404) unless sheet
+
+        body = request.body.read
+        payload = body.empty? ? {} : JSON.parse(body)
+        name = payload["name"].to_s.strip
+        name = "#{sheet.name} (copy)" if name.empty?
+
+        clone = WorkspaceService.fork_sheet_for_user!(current_user, sheet, name: name)
+        json_ok(sheet_payload(clone, current_user), status: 201)
+      rescue JSON::ParserError
+        json_error("Invalid JSON body")
+      end
+
       app.delete "/api/sheets/:id" do
         require_login!
         sheet = VectorSheet.accessible_by(current_user).first(id: params[:id].to_i)

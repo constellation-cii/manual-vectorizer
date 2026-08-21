@@ -1,4 +1,4 @@
-import { fetchWorkspace, deleteSheet } from "./sheets-nav.js";
+import { fetchWorkspace, deleteSheet, cloneSheet, switchSheet } from "./sheets-nav.js";
 import { exportSheetBundle, importSheetBundle, downloadJson, readFileAsText } from "./sheet-io.js";
 
 let sheetId = null;
@@ -143,6 +143,21 @@ async function deleteCurrentSheet() {
   await deleteSheet(sheetId);
   window.location.href = "/edit.html";
 }
+
+async function cloneCurrentSheet() {
+  const base = (sheetMeta?.name || "Sheet").replace(/ \(master\)$/i, "");
+  const name = window.prompt("Clone sheet as:", `${base} (copy)`);
+  if (!name) return;
+  const clone = await cloneSheet(sheetId, name);
+  await switchSheet(clone.id);
+  window.location.reload();
+}
+
+document.getElementById("clone-btn").addEventListener("click", () => {
+  cloneCurrentSheet().catch((e) => {
+    validationOutput.textContent = e.message;
+  });
+});
 
 document.getElementById("save-btn").addEventListener("click", () => saveSheet().catch((e) => {
   validationOutput.textContent = e.message;

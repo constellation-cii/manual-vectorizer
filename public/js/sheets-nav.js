@@ -23,6 +23,18 @@ export async function switchSheet(sheetId) {
   return res.json();
 }
 
+export async function cloneSheet(sheetId, name = null) {
+  const res = await fetch(`/api/sheets/${sheetId}/clone`, {
+    method: "POST",
+    credentials: "same-origin",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(name ? { name } : {}),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || `clone HTTP ${res.status}`);
+  return data;
+}
+
 export async function createSheet(name, forkFromId = null) {
   const res = await fetch("/api/sheets", {
     method: "POST",
@@ -58,8 +70,8 @@ export function initSheetSwitcher(container) {
   const newBtn = document.createElement("button");
   newBtn.type = "button";
   newBtn.className = "btn btn-sm";
-  newBtn.textContent = "+";
-  newBtn.title = "New sheet";
+  newBtn.textContent = "Clone";
+  newBtn.title = "Clone selected sheet";
 
   wrap.append(label, select, newBtn);
   container.prepend(wrap);
@@ -82,9 +94,13 @@ export function initSheetSwitcher(container) {
   });
 
   newBtn.addEventListener("click", async () => {
-    const name = window.prompt("New sheet name:");
+    const sourceId = Number(select.value);
+    if (!sourceId) return;
+    const sourceName = select.selectedOptions[0]?.textContent || "Sheet";
+    const defaultName = sourceName.replace(/ \(master\)$/, "") + " (copy)";
+    const name = window.prompt("Clone sheet as:", defaultName);
     if (!name) return;
-    const sheet = await createSheet(name, Number(select.value) || null);
+    const sheet = await cloneSheet(sourceId, name);
     await switchSheet(sheet.id);
     window.location.reload();
   });
