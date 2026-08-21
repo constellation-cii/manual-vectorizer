@@ -8,15 +8,17 @@ require "securerandom"
 require_relative "database"
 
 module ManualVectorizer
-  Database.connect
-  Database.migrate! if ENV.fetch("RACK_ENV", "development") == "production"
-  Sequel::Model.db = Database.connect
+  if ENV["DATABASE_URL"] && !ENV["DATABASE_URL"].empty?
+    Database.connect!
+    Database.migrate! if ENV.fetch("RACK_ENV", "development") == "production"
+    Sequel::Model.db = Database.connect!
 
-  require_relative "models"
+    require_relative "models"
 
-  if ENV.fetch("RACK_ENV", "development") == "production"
-    require_relative "seeds"
-    Seeds.run!
+    if ENV.fetch("RACK_ENV", "development") == "production"
+      require_relative "seeds"
+      Seeds.run!
+    end
   end
 
   class App < Sinatra::Base
@@ -37,7 +39,10 @@ module ManualVectorizer
     end
 
     before do
-      @current_user = current_user
+      unless request.path_info == "/up"
+        halt 503, "Database not ready" unless Database.connected?
+      end
+      @current_user = current_user if Database.connected?
     end
 
     get "/up" do
@@ -67,6 +72,7 @@ module ManualVectorizer
     end
 
     def current_user
+      return nil unless Database.connected?
       return @current_user if defined?(@current_user)
 
       @current_user = session[:user_id] ? User[session[:user_id]] : nil

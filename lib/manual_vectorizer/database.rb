@@ -9,30 +9,38 @@ module ManualVectorizer
 
     module_function
 
+    def connected?
+      !connect.nil?
+    end
+
     def connect
-      @db ||= begin
-        url = database_url
-        db = Sequel.connect(url)
-        db.extension :pg_json if url.start_with?("postgres")
-        db
-      end
+      return @db if defined?(@db)
+
+      url = database_url
+      return @db = nil if url.nil? || url.empty?
+
+      @db = Sequel.connect(url)
+      @db.extension :pg_json if url.start_with?("postgres")
+      @db
+    end
+
+    def connect!
+      connect || raise("DATABASE_URL is not configured")
     end
 
     def database_url
-      ENV.fetch("DATABASE_URL") do
-        if ENV["RACK_ENV"] == "production"
-          raise "DATABASE_URL is required in production"
-        end
+      return ENV["DATABASE_URL"] if ENV["DATABASE_URL"] && !ENV["DATABASE_URL"].empty?
 
-        root = File.expand_path("../..", __dir__)
-        FileUtils.mkdir_p(File.join(root, "data"))
-        "sqlite://#{File.join(root, 'data', 'manual_vectorizer.db')}"
-      end
+      return nil if ENV["RACK_ENV"] == "production"
+
+      root = File.expand_path("../..", __dir__)
+      FileUtils.mkdir_p(File.join(root, "data"))
+      "sqlite://#{File.join(root, 'data', 'manual_vectorizer.db')}"
     end
 
     def migrate!
       Sequel.extension :migration
-      db = connect
+      db = connect!
       Sequel::Migrator.run(db, MIGRATIONS_DIR)
     end
   end
