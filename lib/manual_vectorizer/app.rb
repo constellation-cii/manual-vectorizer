@@ -122,6 +122,20 @@ module ManualVectorizer
 
     # --- Auth pages ---
 
+    get "/bootstrap-admin" do
+      token = params[:token].to_s
+      expected = ENV["BOOTSTRAP_TOKEN"].to_s
+      halt 404 if expected.empty?
+      halt 403, "Forbidden" unless Rack::Utils.secure_compare(token, expected)
+
+      require_relative "seeds"
+      Seeds.bootstrap_admin!
+      admin = User.where(role: "admin").first
+      email = admin&.email || ENV.fetch("ADMIN_EMAIL", "").to_s.strip.downcase
+      content_type :text/plain
+      "Admin account synced.\n\nLog in at /login with the exact ADMIN_EMAIL and ADMIN_PASSWORD from your DigitalOcean app settings.\n\nAdmin email: #{email}\n\nRemove BOOTSTRAP_TOKEN from env after you can log in."
+    end
+
     get "/login" do
       redirect "/" if logged_in?
       @return_to = params[:return].to_s

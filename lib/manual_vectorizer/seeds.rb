@@ -18,7 +18,7 @@ module ManualVectorizer
 
     def bootstrap_admin!
       email = ENV.fetch("ADMIN_EMAIL", "admin@example.com").to_s.strip.downcase
-      password = ENV.fetch("ADMIN_PASSWORD", "changeme-admin")
+      password = ENV.fetch("ADMIN_PASSWORD", "changeme-admin").to_s.strip
       return if email.empty? || password.empty?
 
       user = User.find(email: email)
