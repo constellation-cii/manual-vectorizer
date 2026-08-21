@@ -125,15 +125,27 @@ module ManualVectorizer
     get "/bootstrap-admin" do
       token = params[:token].to_s
       expected = ENV["BOOTSTRAP_TOKEN"].to_s
-      halt 404 if expected.empty?
-      halt 403, "Forbidden" unless Rack::Utils.secure_compare(token, expected)
+      halt 404, "Bootstrap token not configured" if expected.empty?
+      unless token.bytesize == expected.bytesize &&
+             Rack::Utils.secure_compare(token, expected)
+        halt 403, "Forbidden"
+      end
 
       require_relative "seeds"
       Seeds.bootstrap_admin!
       admin = User.where(role: "admin").first
       email = admin&.email || ENV.fetch("ADMIN_EMAIL", "").to_s.strip.downcase
-      content_type :text/plain
-      "Admin account synced.\n\nLog in at /login with the exact ADMIN_EMAIL and ADMIN_PASSWORD from your DigitalOcean app settings.\n\nAdmin email: #{email}\n\nRemove BOOTSTRAP_TOKEN from env after you can log in."
+      content_type "text/plain"
+      status 200
+      <<~TEXT
+        Admin account synced.
+
+        Log in at /login with the exact ADMIN_EMAIL and ADMIN_PASSWORD from your DigitalOcean app settings.
+
+        Admin email: #{email}
+
+        Remove BOOTSTRAP_TOKEN from env after you can log in.
+      TEXT
     end
 
     get "/login" do
