@@ -1,0 +1,28 @@
+<% @title = "Admin" %>
+<h1>Admin</h1>
+<p class="auth-lead">Signed in as <%= h @current_user.email %></p>
+<% if params[:created] %>
+  <p class="auth-success">New invite code: <code><%= h params[:created] %></code> (one use, expires in 7 days)</p>
+<% end %>
+<form method="post" action="/admin/invites">
+  <button type="submit" class="btn btn-primary">Generate invite code</button>
+</form>
+<section class="admin-invites">
+  <h2>Recent invites</h2>
+  <table>
+    <thead>
+      <tr><th>Code</th><th>Status</th><th>Created</th><th>Expires</th></tr>
+    </thead>
+    <tbody>
+      <% @invites.each do |invite| %>
+        <tr>
+          <td><code><%= h invite.code %></code></td>
+          <td><%= invite.used_at ? "Used" : (invite.available? ? "Available" : "Expired") %></td>
+          <td><%= invite.created_at %></td>
+          <td><%= invite.expires_at || "—" %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</section>
+<p class="auth-foot"><a href="/">Vectorizer</a> · <form method="post" action="/logout" style="display:inline"><button type="submit" class="btn-link">Log out</button></form></p>

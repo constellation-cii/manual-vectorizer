@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Results — Manual Vectorizer</title>
+  <link rel="stylesheet" href="css/app.css" />
+</head>
+<body>
+  <header>
+    <h1>Manual Vectorizer — Results</h1>
+    <nav>
+      <a href="/">Vectorize</a>
+      <a href="/weights.html">Weights</a>
+      <a href="/results.html" class="active">Results</a>
+    </nav>
+  </header>
+
+  <div class="toolbar">
+    <div id="summary" class="stats-bar"></div>
+    <label>
+      Show top
+      <select id="top-n">
+        <option value="10">10</option>
+        <option value="25">25</option>
+        <option value="50">50</option>
+        <option value="all">All</option>
+      </select>
+    </label>
+  </div>
+
+  <main id="results-app">
+    <div class="empty-notice">Loading…</div>
+  </main>
+
+  <footer id="catalog-source" class="catalog-source"></footer>
+
+  <script type="module" src="js/auth-nav.js"></script>
+  <script type="module" src="js/results.js?v=4"></script>
+</body>
+</html>

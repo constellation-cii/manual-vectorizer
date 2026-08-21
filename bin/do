@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+# Run doctl with DIGITALOCEAN_ACCESS_TOKEN from .env in this project.
+set -euo pipefail
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+ENV_FILE="$ROOT/.env"
+
+if [[ -f "$ENV_FILE" ]]; then
+  set -a
+  # shellcheck disable=SC1090
+  source "$ENV_FILE"
+  set +a
+fi
+
+if [[ -z "${DIGITALOCEAN_ACCESS_TOKEN:-}" ]]; then
+  echo "Set DIGITALOCEAN_ACCESS_TOKEN in $ENV_FILE" >&2
+  echo "  cp .env.example .env   # then edit .env" >&2
+  exit 1
+fi
+
+DOCTL="${DOCTL:-doctl}"
+if ! command -v "$DOCTL" >/dev/null 2>&1; then
+  DOCTL="$HOME/.local/bin/doctl"
+fi
+if ! command -v "$DOCTL" >/dev/null 2>&1; then
+  echo "doctl not found — install: pacman -S doctl" >&2
+  exit 1
+fi
+
+exec "$DOCTL" "$@"

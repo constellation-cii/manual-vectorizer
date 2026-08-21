@@ -1,0 +1,20 @@
+<% @title = "Sign up" %>
+<h1>Create account</h1>
+<p class="auth-lead">Enter the one-time invite code from your admin.</p>
+<% if @error %><p class="auth-error"><%= h @error %></p><% end %>
+<form method="post" action="/signup" class="auth-form">
+  <label>
+    Invite code
+    <input type="text" name="invite_code" value="<%= h @invite_code %>" autocomplete="off" required />
+  </label>
+  <label>
+    Email
+    <input type="email" name="email" autocomplete="username" required />
+  </label>
+  <label>
+    Password (8+ characters)
+    <input type="password" name="password" autocomplete="new-password" minlength="8" required />
+  </label>
+  <button type="submit" class="btn btn-primary">Create account</button>
+</form>
+<p class="auth-foot"><a href="/login">Back to log in</a></p>

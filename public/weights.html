@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Weights — Manual Vectorizer</title>
+  <link rel="stylesheet" href="css/app.css" />
+</head>
+<body>
+  <header>
+    <h1>Manual Vectorizer — Weights</h1>
+    <nav>
+      <a href="/">Vectorize</a>
+      <a href="/weights.html" class="active">Weights</a>
+      <a href="/results.html">Results</a>
+    </nav>
+  </header>
+
+  <div class="toolbar">
+    <label>
+      Filter
+      <input type="text" id="filter" placeholder="Search axis key…" autocomplete="off" />
+    </label>
+    <label>
+      <input type="checkbox" id="show-zero-only" />
+      Show disabled only (weight 0)
+    </label>
+    <div id="stats" class="stats-bar"></div>
+    <div style="margin-left:auto;display:flex;gap:0.5rem">
+      <button type="button" class="btn" id="reset-weights">Reset to defaults</button>
+      <button type="button" class="btn btn-primary" id="export-weights">Export weights</button>
+    </div>
+  </div>
+
+  <main>
+    <div id="weights-app">
+      <div class="empty-notice">Loading catalog…</div>
+    </div>
+  </main>
+
+  <footer id="catalog-source" class="catalog-source"></footer>
+
+  <dialog id="export-fallback" class="export-fallback">
+    <div class="export-fallback-panel">
+      <button type="button" class="export-fallback-close" aria-label="Close">×</button>
+      <h2 id="export-fallback-title">Export ready</h2>
+      <p class="export-fallback-hint" id="export-fallback-hint"></p>
+      <div class="export-fallback-actions">
+        <button type="button" class="btn btn-primary export-fallback-save">Share / Save file</button>
+        <button type="button" class="btn export-fallback-select">Select all JSON</button>
+        <button type="button" class="btn export-fallback-copy">Copy JSON</button>
+        <button type="button" class="btn export-fallback-view">View JSON</button>
+      </div>
+      <textarea class="export-fallback-preview" readonly spellcheck="false" aria-label="Exported JSON"></textarea>
+      <p class="export-fallback-status" aria-live="polite"></p>
+    </div>
+  </dialog>
+
+  <script>
+    window.addEventListener("error", function (event) {
+      var target = document.getElementById("weights-app") || document.getElementById("app");
+      if (!target || target.dataset.bootError) return;
+      if (!/Loading catalog/i.test(target.textContent || "")) return;
+      target.dataset.bootError = "1";
+      target.innerHTML =
+        '<div class="empty-notice">Script error: ' +
+        (event.message || "unknown error") +
+        ". Hard refresh the page.</div>";
+    });
+  </script>
+  <script type="module" src="js/auth-nav.js"></script>
+  <script type="module" src="js/weights.js?v=4"></script>
+</body>
+</html>

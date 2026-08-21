@@ -1,0 +1,17 @@
+<% @title = "Log in" %>
+<h1>Manual Vectorizer</h1>
+<p class="auth-lead">Log in to continue.</p>
+<% if @error %><p class="auth-error"><%= h @error %></p><% end %>
+<form method="post" action="/login" class="auth-form">
+  <input type="hidden" name="return" value="<%= h @return_to %>" />
+  <label>
+    Email
+    <input type="email" name="email" autocomplete="username" required />
+  </label>
+  <label>
+    Password
+    <input type="password" name="password" autocomplete="current-password" required />
+  </label>
+  <button type="submit" class="btn btn-primary">Log in</button>
+</form>
+<p class="auth-foot">Have an invite code? <a href="/signup">Create account</a></p>

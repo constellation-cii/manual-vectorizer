@@ -1,0 +1,11 @@
+.server.pid
+.DS_Store
+*.pyc
+__pycache__/
+.env
+.env.local
+!.env.example
+data/*.db
+data/*.db-journal
+.bundle/
+vendor/bundle/

@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Manual Vectorizer</title>
+  <link rel="stylesheet" href="css/app.css" />
+</head>
+<body>
+  <header>
+    <h1>Manual Vectorizer</h1>
+    <nav>
+      <a href="/" class="active">Vectorize</a>
+      <a href="/weights.html">Weights</a>
+      <a href="/results.html">Results</a>
+    </nav>
+  </header>
+
+  <div class="toolbar">
+    <label>
+      Speaker
+      <input type="text" id="speaker" placeholder="Speaker name" autocomplete="off" />
+    </label>
+
+    <div>
+      <span style="font-size:0.85rem;color:var(--text-muted);margin-right:0.5rem">Mode</span>
+      <div class="mode-toggle">
+        <button type="button" id="mode-binary" class="active">Binary</button>
+        <button type="button" id="mode-ranked">Ranked</button>
+      </div>
+    </div>
+
+    <label>
+      Load type
+      <select id="type-picker">
+        <option value="">Choose a type…</option>
+      </select>
+    </label>
+
+    <div id="stats" class="stats-bar"></div>
+
+    <div style="margin-left:auto;display:flex;gap:0.5rem;flex-wrap:wrap">
+      <button type="button" class="btn" id="clear-btn">Clear all</button>
+      <button type="button" class="btn btn-primary" id="export-btn">Export vectors.json</button>
+    </div>
+  </div>
+
+  <main id="app">
+    <div class="empty-notice">Loading catalog…</div>
+  </main>
+
+  <footer id="catalog-source" class="catalog-source"></footer>
+
+  <dialog id="export-fallback" class="export-fallback">
+    <div class="export-fallback-panel">
+      <button type="button" class="export-fallback-close" aria-label="Close">×</button>
+      <h2 id="export-fallback-title">Export ready</h2>
+      <p class="export-fallback-hint" id="export-fallback-hint"></p>
+      <div class="export-fallback-actions">
+        <button type="button" class="btn btn-primary export-fallback-save">Share / Save file</button>
+        <button type="button" class="btn export-fallback-select">Select all JSON</button>
+        <button type="button" class="btn export-fallback-copy">Copy JSON</button>
+        <button type="button" class="btn export-fallback-view">View JSON</button>
+      </div>
+      <textarea class="export-fallback-preview" readonly spellcheck="false" aria-label="Exported JSON"></textarea>
+      <p class="export-fallback-status" aria-live="polite"></p>
+    </div>
+  </dialog>
+
+  <script>
+    window.addEventListener("error", function (event) {
+      var target = document.getElementById("app") || document.getElementById("weights-app");
+      if (!target || target.dataset.bootError) return;
+      if (!/Loading catalog/i.test(target.textContent || "")) return;
+      target.dataset.bootError = "1";
+      target.innerHTML =
+        '<div class="empty-notice">Script error: ' +
+        (event.message || "unknown error") +
+        ". Hard refresh the page.</div>";
+    });
+  </script>
+  <script type="module" src="js/auth-nav.js"></script>
+  <script type="module" src="js/app.js?v=4"></script>
+</body>
+</html>
