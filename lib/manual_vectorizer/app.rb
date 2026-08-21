@@ -31,11 +31,12 @@ module ManualVectorizer
 
     configure do
       enable :sessions
-      set :session_secret, ENV.fetch("SESSION_SECRET") do
-        raise "SESSION_SECRET is required in production" if ENV.fetch("RACK_ENV", "development") == "production"
-
-        "dev-session-secret-change-me"
+      secret = ENV["SESSION_SECRET"]
+      secret = "dev-session-secret-change-me" if secret.nil? || secret.empty?
+      if secret == "dev-session-secret-change-me" && ENV.fetch("RACK_ENV", "development") == "production"
+        raise "SESSION_SECRET is required in production"
       end
+      set :session_secret, secret
     end
 
     before do
