@@ -24,12 +24,21 @@ module ManualVectorizer
 
         "dev-session-secret-change-me"
       end
+    end
+
+    def self.db
       Database.connect
-      Sequel::Model.db = Database.connect
+      Sequel::Model.db = Database.connect unless Sequel::Model.db
+      Database.connect
     end
 
     before do
       @current_user = current_user
+      self.class.db unless request.path_info == "/up"
+    end
+
+    get "/up" do
+      "ok"
     end
 
     def self.session_secret

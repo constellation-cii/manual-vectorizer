@@ -9,7 +9,7 @@ export ADMIN_EMAIL="${ADMIN_EMAIL:-admin@example.com}"
 export ADMIN_PASSWORD="${ADMIN_PASSWORD:-changeme-admin}"
 
 bundle check >/dev/null 2>&1 || bundle install
-bundle exec rake db:migrate db:seed
+bundle exec rake db:migrate_app db:seed
 
 PORT="${1:-8080}"
 export PORT

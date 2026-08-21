@@ -26,6 +26,13 @@ services:
     source_dir: /
     run_command: bundle exec puma -C config/puma.rb
     http_port: 8080
+    health_check:
+      failure_threshold: 6
+      http_path: /up
+      initial_delay_seconds: 20
+      period_seconds: 10
+      success_threshold: 1
+      timeout_seconds: 5
     instance_count: 1
     instance_size_slug: basic-xxs
     envs:
