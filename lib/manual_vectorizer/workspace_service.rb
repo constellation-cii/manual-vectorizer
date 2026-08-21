@@ -22,7 +22,11 @@ module ManualVectorizer
 
     def ensure_master_sheet!
       existing = VectorSheet.master_sheet
-      return existing if existing
+      if existing && existing.definition["vectors"]&.any?
+        return existing
+      end
+
+      existing&.delete
 
       catalog = CatalogSnapshot.active_catalog
       definition = if catalog
@@ -39,6 +43,7 @@ module ManualVectorizer
     def fork_sheet_for_user!(user, source_sheet, name: nil)
       definition = JSON.parse(JSON.generate(source_sheet.definition))
       ManualVectorizer::SheetDefinition.compute_hashes!(definition)
+      definition["meta"] ||= {}
       definition["meta"]["name"] = name if name
       VectorSheet.create(
         owner_id: user.id,
@@ -46,7 +51,7 @@ module ManualVectorizer
         slug: unique_slug(user.id, name || source_sheet.slug),
         description: source_sheet.description,
         definition: definition,
-        definition_version: SheetDefinition::VERSION,
+        definition_version: ManualVectorizer::SheetDefinition::VERSION,
         content_fingerprint: ManualVectorizer::SheetDefinition.fingerprint(definition),
         is_master: false,
         forked_from_id: source_sheet.id,
@@ -95,7 +100,7 @@ module ManualVectorizer
     end
 
     def migrate_legacy_users!
-      master = ensure_master_sheet!
+      ensure_master_sheet!
       User.each do |user|
         next if UserWorkspace.find(user_id: user.id)
 
@@ -103,8 +108,9 @@ module ManualVectorizer
         legacy = UserState.for_user(user)
         workspace = UserWorkspace.find(user_id: user.id)
         workspace.update(draft_state: legacy.parsed_state, updated_at: Time.now)
+      rescue StandardError => e
+        warn "User workspace migration skipped for user #{user.id}: #{e.message}"
       end
-      master
     end
 
     def save_draft!(user, state)
