@@ -9,9 +9,16 @@ require_relative "database"
 
 module ManualVectorizer
   Database.connect
+  Database.migrate! if ENV.fetch("RACK_ENV", "development") == "production"
   Sequel::Model.db = Database.connect
 
   require_relative "models"
+
+  if ENV.fetch("RACK_ENV", "development") == "production"
+    require_relative "seeds"
+    Seeds.run!
+  end
+
   class App < Sinatra::Base
     helpers Sinatra::ContentFor
 
