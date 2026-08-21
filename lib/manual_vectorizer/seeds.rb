@@ -12,9 +12,11 @@ module ManualVectorizer
       Sequel::Model.db = db
       require_relative "models"
 
-      result = bootstrap_admin!
-      if result[:ok]
-        puts "Synced admin credentials for #{result[:email]}"
+      result = ensure_admin!
+      if result[:created]
+        puts "Created admin user #{result[:email]}"
+      elsif result[:ok]
+        puts "Admin user already exists (#{result[:email]})"
       else
         warn "Admin bootstrap skipped: #{result[:error]}"
       end
@@ -22,18 +24,35 @@ module ManualVectorizer
       bootstrap_catalog!
     end
 
-    def bootstrap_admin!(password: nil, email: nil)
-      email = (email || ENV["ADMIN_EMAIL"] || "admin@example.com").to_s.strip.downcase
-      password = password.to_s.strip unless password.nil?
-      password = ENV["ADMIN_PASSWORD"].to_s.strip if password.nil? || password.empty?
+    # Boot-time only: create the first admin account. Never overwrite passwords.
+    def ensure_admin!
+      email = ENV.fetch("ADMIN_EMAIL", "admin@example.com").to_s.strip.downcase
+      password = ENV.fetch("ADMIN_PASSWORD", "changeme-admin").to_s.strip
 
       return { ok: false, error: "Email is required" } if email.empty?
-      if password.empty?
-        return {
-          ok: false,
-          error: "Password is required. Set ADMIN_PASSWORD in DigitalOcean or pass ?password= on the bootstrap URL."
-        }
+      return { ok: false, error: "Password is required" } if password.empty?
+      return { ok: false, error: "Password must be at least 8 characters" } if password.length < 8
+
+      if User.find(email: email)
+        return { ok: true, email: email, created: false }
       end
+
+      existing_admin = User.where(role: "admin").first
+      if existing_admin
+        return { ok: true, email: existing_admin.email, created: false }
+      end
+
+      User.create_account!(email: email, password: password, role: "admin")
+      { ok: true, email: email, created: true }
+    end
+
+    # Recovery only: explicit password reset via bootstrap URL (?password= required).
+    def reset_admin_credentials!(password:, email: nil)
+      email = (email || ENV["ADMIN_EMAIL"] || "admin@example.com").to_s.strip.downcase
+      password = password.to_s.strip
+
+      return { ok: false, error: "Email is required" } if email.empty?
+      return { ok: false, error: "Password is required" } if password.empty?
       return { ok: false, error: "Password must be at least 8 characters" } if password.length < 8
 
       user = User.find(email: email)
@@ -51,12 +70,7 @@ module ManualVectorizer
       end
 
       auth_ok = !User.authenticate(email, password).nil?
-      {
-        ok: true,
-        email: email,
-        auth_ok: auth_ok,
-        password_from: password.nil? ? "env" : "parameter"
-      }
+      { ok: true, email: email, auth_ok: auth_ok }
     end
 
     def bootstrap_catalog!
