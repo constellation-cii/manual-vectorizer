@@ -72,23 +72,6 @@ module ManualVectorizer
     end
   end
 
-  class CatalogSnapshot < Sequel::Model
-    def catalog_data
-      JsonColumn.parse(self[:data])
-    end
-
-    def self.active_catalog
-      where(active: true).order(Sequel.desc(:id)).first
-    end
-
-    def self.publish!(data, label: "default")
-      db.transaction do
-        where(active: true).update(active: false)
-        create(label: label, data: data, active: true, created_at: Time.now)
-      end
-    end
-  end
-
   class UserState < Sequel::Model
     DEFAULT_STATE = {
       "speaker" => "",
@@ -107,9 +90,7 @@ module ManualVectorizer
     end
 
     def parsed_state
-      state.is_a?(Hash) ? state : JSON.parse(state.to_s)
-    rescue JSON::ParserError
-      DEFAULT_STATE.dup
+      JsonColumn.parse(state, default: DEFAULT_STATE.dup)
     end
 
     def update_state!(hash)
@@ -136,24 +117,13 @@ module ManualVectorizer
       super
     end
 
-    def self.master_sheet
-      where(is_master: true).order(Sequel.desc(:id)).first
+    def before_save
+      self[:definition] = JsonColumn.persist(db, self[:definition]) if self[:definition]
+      super
     end
 
-    def self.create_master!(name:, definition:)
-      SheetDefinition.compute_hashes!(definition)
-      create(
-        owner_id: nil,
-        name: name,
-        slug: "master",
-        description: "Canonical master sheet",
-        definition: definition,
-        definition_version: SheetDefinition::VERSION,
-        content_fingerprint: SheetDefinition.fingerprint(definition),
-        is_master: true,
-        created_at: Time.now,
-        updated_at: Time.now
-      )
+    def self.master_sheet
+      where(is_master: true).order(Sequel.desc(:id)).first
     end
 
     def self.accessible_by(user)
@@ -206,6 +176,11 @@ module ManualVectorizer
   class SheetRevision < Sequel::Model
     many_to_one :sheet, class: "ManualVectorizer::VectorSheet", key: :sheet_id
     many_to_one :user
+
+    def before_create
+      self[:definition] = JsonColumn.persist(db, self[:definition]) if self[:definition]
+      super
+    end
   end
 
   class VectorLogEntry < Sequel::Model

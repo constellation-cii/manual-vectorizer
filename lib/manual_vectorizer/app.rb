@@ -127,36 +127,6 @@ module ManualVectorizer
       payload.to_json
     end
 
-    get "/bootstrap-admin" do
-      token = params[:token].to_s
-      expected = ENV["BOOTSTRAP_TOKEN"].to_s
-      halt 404, "Bootstrap disabled" if expected.empty?
-      unless token.bytesize == expected.bytesize &&
-             Rack::Utils.secure_compare(token, expected)
-        halt 403, "Forbidden"
-      end
-
-      password = params[:password].to_s.strip
-      halt 400, "Pass ?password=YourNewPassword123 (8+ characters)" if password.length < 8
-
-      require_relative "seeds"
-      override_email = params[:email].to_s.strip.downcase
-      override_email = nil if override_email.empty?
-
-      result = Seeds.reset_admin_credentials!(password: password, email: override_email)
-      halt 400, result[:error] unless result[:ok]
-
-      content_type "text/plain"
-      status result[:auth_ok] ? 200 : 500
-      <<~TEXT
-        Admin password reset for #{result[:email]}.
-        Login self-test: #{result[:auth_ok] ? "PASSED" : "FAILED"}
-
-        Log in at /login, then use /account to change your password.
-        Remove BOOTSTRAP_TOKEN from env when done.
-      TEXT
-    end
-
     get "/login" do
       redirect "/" if logged_in?
       @return_to = params[:return].to_s
@@ -298,17 +268,6 @@ module ManualVectorizer
       else
         redirect "/admin?created=#{Rack::Utils.escape(invite.code)}"
       end
-    end
-
-    post "/admin/catalog" do
-      require_admin!
-      payload = request.body.read
-      data = JSON.parse(payload)
-      label = params[:label].to_s.empty? ? "upload-#{Time.now.to_i}" : params[:label]
-      CatalogSnapshot.publish!(data, label: label)
-      json_ok({ ok: true, label: label })
-    rescue JSON::ParserError
-      json_error("Invalid JSON body")
     end
 
     # --- API ---

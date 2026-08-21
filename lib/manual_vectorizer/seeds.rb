@@ -1,8 +1,5 @@
 # frozen_string_literal: true
 
-require "json"
-require "fileutils"
-
 module ManualVectorizer
   module Seeds
     module_function
@@ -18,9 +15,8 @@ module ManualVectorizer
       elsif result[:ok]
         puts "Admin user already exists (#{result[:email]})"
       else
-        warn "Admin bootstrap skipped: #{result[:error]}"
+        warn "Admin seed skipped: #{result[:error]}"
       end
-
     end
 
     # Boot-time only: create the first admin account. Never overwrite passwords.
@@ -45,33 +41,5 @@ module ManualVectorizer
       WorkspaceService.provision_user!(user)
       { ok: true, email: email, created: true }
     end
-
-    # Recovery only: explicit password reset via bootstrap URL (?password= required).
-    def reset_admin_credentials!(password:, email: nil)
-      email = (email || ENV["ADMIN_EMAIL"] || "admin@example.com").to_s.strip.downcase
-      password = password.to_s.strip
-
-      return { ok: false, error: "Email is required" } if email.empty?
-      return { ok: false, error: "Password is required" } if password.empty?
-      return { ok: false, error: "Password must be at least 8 characters" } if password.length < 8
-
-      user = User.find(email: email)
-      if user
-        user.set_password!(password)
-        user.update(role: "admin") unless user.admin?
-      else
-        existing_admin = User.where(role: "admin").first
-        if existing_admin
-          existing_admin.update(email: email)
-          existing_admin.set_password!(password)
-        else
-          User.create_account!(email: email, password: password, role: "admin")
-        end
-      end
-
-      auth_ok = !User.authenticate(email, password).nil?
-      { ok: true, email: email, auth_ok: auth_ok }
-    end
-
   end
 end

@@ -286,22 +286,5 @@ module ManualVectorizer
         "rankings" => rankings || []
       }
     end
-
-    def temples_sample_definition
-      catalog_path = File.expand_path("../../data/catalog.json", __dir__)
-      catalog = JSON.parse(File.read(catalog_path, encoding: "UTF-8"))
-      temple_keys = catalog["categories"]["temples"] || []
-      temple_skills = catalog["skills"].select { |s| temple_keys.include?(s["key"]) }
-
-      mini_catalog = catalog.merge(
-        "skills" => temple_skills,
-        "categories" => { "temples" => temple_keys },
-        "ui_groups" => { "temples" => catalog.dig("ui_groups", "temples") || [] },
-        "types" => catalog["types"].first(4),
-        "skill_count" => temple_skills.length,
-        "type_count" => 4
-      )
-      from_catalog(mini_catalog, name: "Temples Sample", description: "Temple blindspot/focus vectors for merge testing")
-    end
   end
 end

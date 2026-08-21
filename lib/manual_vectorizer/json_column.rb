@@ -16,5 +16,10 @@ module ManualVectorizer
     rescue JSON::ParserError, TypeError
       default
     end
+
+    def persist(db, value)
+      normalized = parse(value)
+      db.database_type == :postgres ? Sequel.pg_json(normalized) : normalized
+    end
   end
 end

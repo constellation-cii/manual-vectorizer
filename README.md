@@ -25,7 +25,7 @@ Local dev uses SQLite at `data/manual_vectorizer.db` unless `DATABASE_URL` is se
 
 ## Auth model
 
-1. Bootstrap **admin** from `ADMIN_EMAIL` + `ADMIN_PASSWORD` on seed (first deploy only — never overwrites existing passwords).
+1. Create the **admin** from `ADMIN_EMAIL` + `ADMIN_PASSWORD` on first boot (never overwrites existing passwords).
 2. Admin opens `/admin` → **Generate invite code** (one use, 7-day expiry).
 3. New user visits `/signup` with the code → creates account → code is consumed.
 4. New users receive a fork of the **master sheet**; workspace state persists via `/api/session`.
@@ -40,9 +40,13 @@ Each user works with one **active sheet** at a time (switch via header dropdown)
 | `/log.html` | Save speaker rankings with source notes; share logs by email |
 | `/merge.html` | Merge a guest sheet bundle into the active sheet with type mapping |
 
-- **Master sheet** — admins maintain the canonical template; all users can read it; new users fork from it.
+- **Master sheet** — canonical Type Grid Master row in Postgres; admins can edit it via `/edit.html` when selected; new users fork from it.
 - **Export/import** — full sheet bundles via Edit page or `GET /api/sheets/:id/export` and `POST /api/sheets/import`.
 - **Sharing** — read-only share of sheets or logs to existing users by exact email match.
+
+## Master sheet (production)
+
+The master sheet is the **`vector_sheets`** row with `is_master = true`. It is **not** rebuilt on deploy. Load or update it with direct Postgres changes, or edit it in the app (`/edit.html`) when **Type Grid Master** is the active sheet.
 
 ## DigitalOcean App Platform
 
@@ -50,8 +54,8 @@ Spec: [`.do/app.yaml`](.do/app.yaml)
 
 1. Create app from `constellation-cii/manual-vectorizer`.
 2. Attach managed PostgreSQL — `DATABASE_URL` is wired automatically.
-3. Set secrets: `SESSION_SECRET`, `ADMIN_EMAIL`, `ADMIN_PASSWORD`.
-4. Deploy — migrations run on boot; master sheet + user migration seed automatically.
+3. Set secrets in the dashboard: `SESSION_SECRET`, `ADMIN_EMAIL`, `ADMIN_PASSWORD`.
+4. Deploy — migrations and admin seed run on boot. The master sheet must already exist in Postgres (or be loaded manually).
 
 ## API (authenticated)
 
@@ -71,6 +75,4 @@ Spec: [`.do/app.yaml`](.do/app.yaml)
 | POST | `/api/logs/:id/share` | Share log by email |
 | POST | `/api/sheets/:id/share` | Share sheet by email |
 
-## Legacy catalog
-
-`catalog_snapshots` + `data/catalog.json` remain for bootstrapping the master sheet. Per-user `/api/catalog` now resolves from the active vector sheet.
+`data/catalog.json` is the source file for building the master sheet offline. Runtime `/api/catalog` resolves from the user's active vector sheet.

@@ -9,16 +9,6 @@
 </form>
 
 <section class="admin-invites">
-  <h2>Master sheet</h2>
-  <p class="auth-lead">Create a temples sample sheet for merge testing.</p>
-  <p>
-    <a href="/edit.html" class="btn">Edit active sheet</a>
-    <button type="button" class="btn" id="create-temples-sample">Create temples sample sheet</button>
-  </p>
-  <p class="auth-lead">Switch to <strong>Type Grid Master</strong> in the header sheet dropdown if your copy is empty.</p>
-</section>
-
-<section class="admin-invites">
   <h2>Recent invites</h2>
   <table>
     <thead>
@@ -37,10 +27,3 @@
   </table>
 </section>
 <p class="auth-foot"><a href="/">Vectorizer</a> · <a href="/account">Account</a> · <form method="post" action="/logout" style="display:inline"><button type="submit" class="btn-link">Log out</button></form></p>
-<script>
-document.getElementById("create-temples-sample")?.addEventListener("click", async () => {
-  const res = await fetch("/api/admin/temples-sample", { method: "POST", credentials: "same-origin" });
-  const data = await res.json();
-  alert(res.ok ? "Created: " + data.name : (data.error || "Failed"));
-});
-</script>

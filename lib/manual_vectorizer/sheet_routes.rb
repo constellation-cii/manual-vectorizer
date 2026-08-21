@@ -49,7 +49,7 @@ module ManualVectorizer
         source = if body["fork_from_id"]
                    VectorSheet.accessible_by(current_user).first(id: body["fork_from_id"])
                  else
-                   VectorSheet.master_sheet || WorkspaceService.ensure_master_sheet!
+                   VectorSheet.master_sheet
                  end
         halt 404, json_error("Source sheet not found", status: 404) unless source
 
@@ -177,40 +177,6 @@ module ManualVectorizer
         json_ok(result)
       rescue JSON::ParserError
         json_error("Invalid JSON body")
-      end
-
-      app.post "/api/admin/master-sheet" do
-        require_admin!
-        body = parse_sheet_body(request)
-        definition = body["definition"] || body
-        errors = SheetDefinition.validate(definition)
-        halt 422, json_error(errors.join("; "), status: 422) unless errors.empty?
-
-        master = VectorSheet.master_sheet
-        if master
-          master.update_definition!(definition, user: current_user, summary: "Admin master update")
-        else
-          master = VectorSheet.create_master!(name: definition.dig("meta", "name") || "Type Grid Master", definition: definition)
-        end
-        json_ok(sheet_payload(master, current_user))
-      end
-
-      app.post "/api/admin/temples-sample" do
-        require_admin!
-        definition = SheetDefinition.temples_sample_definition
-        sheet = VectorSheet.create(
-          owner_id: current_user.id,
-          name: "Temples Sample",
-          slug: WorkspaceService.unique_slug(current_user.id, "temples-sample"),
-          description: "Temple blindspot/focus vectors for merge testing",
-          definition: definition,
-          definition_version: SheetDefinition::VERSION,
-          content_fingerprint: SheetDefinition.fingerprint(definition),
-          is_master: false,
-          created_at: Time.now,
-          updated_at: Time.now
-        )
-        json_ok(sheet_payload(sheet, current_user), status: 201)
       end
 
       app.get "/api/logs" do

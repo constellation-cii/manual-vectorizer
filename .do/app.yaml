@@ -42,8 +42,16 @@ services:
       - key: RACK_ENV
         scope: RUN_TIME
         value: production
-      # SESSION_SECRET, ADMIN_EMAIL, ADMIN_PASSWORD, BOOTSTRAP_TOKEN:
-      # set in DO dashboard only — do not commit here or GitHub deploys wipe them.
+      # Values set in DO dashboard — declare keys only, never value: ""
+      - key: SESSION_SECRET
+        scope: RUN_TIME
+        type: SECRET
+      - key: ADMIN_EMAIL
+        scope: RUN_TIME
+        type: SECRET
+      - key: ADMIN_PASSWORD
+        scope: RUN_TIME
+        type: SECRET
 
 ingress:
   rules:

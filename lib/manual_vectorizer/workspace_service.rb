@@ -83,19 +83,6 @@ module ManualVectorizer
       sheet
     end
 
-    def migrate_legacy_users!
-      User.each do |user|
-        next if UserWorkspace.find(user_id: user.id)
-
-        provision_user!(user)
-        legacy = UserState.for_user(user)
-        workspace = UserWorkspace.find(user_id: user.id)
-        workspace.update(draft_state: legacy.parsed_state, updated_at: Time.now)
-      rescue StandardError => e
-        warn "User workspace migration skipped for user #{user.id}: #{e.message}"
-      end
-    end
-
     def save_draft!(user, state)
       workspace = workspace_for(user)
       workspace.update(draft_state: state, updated_at: Time.now)
