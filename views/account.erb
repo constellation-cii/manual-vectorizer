@@ -1,0 +1,25 @@
+<% @title = "Account" %>
+<h1>Account</h1>
+<p class="auth-lead">Signed in as <%= h @current_user.email %></p>
+<% if @success %><p class="auth-success">Password updated.</p><% end %>
+<% if @error %><p class="auth-error"><%= h @error %></p><% end %>
+<form method="post" action="/account/password" class="auth-form">
+  <label>
+    Current password
+    <input type="password" name="current_password" autocomplete="current-password" required />
+  </label>
+  <label>
+    New password
+    <input type="password" name="new_password" autocomplete="new-password" minlength="8" required />
+  </label>
+  <label>
+    Confirm new password
+    <input type="password" name="new_password_confirmation" autocomplete="new-password" minlength="8" required />
+  </label>
+  <button type="submit" class="btn btn-primary">Update password</button>
+</form>
+<p class="auth-foot">
+  <a href="/">Vectorizer</a>
+  <% if @current_user.admin? %> · <a href="/admin">Admin</a><% end %>
+  · <form method="post" action="/logout" style="display:inline"><button type="submit" class="btn-link">Log out</button></form>
+</p>

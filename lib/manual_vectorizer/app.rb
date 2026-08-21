@@ -122,45 +122,6 @@ module ManualVectorizer
 
     # --- Auth pages ---
 
-    get "/bootstrap-admin" do
-      token = params[:token].to_s
-      expected = ENV["BOOTSTRAP_TOKEN"].to_s
-      halt 404, "Bootstrap token not configured" if expected.empty?
-      unless token.bytesize == expected.bytesize &&
-             Rack::Utils.secure_compare(token, expected)
-        halt 403, "Forbidden"
-      end
-
-      require_relative "seeds"
-      override_password = params[:password].to_s.strip
-      override_password = nil if override_password.empty?
-      override_email = params[:email].to_s.strip.downcase
-      override_email = nil if override_email.empty?
-
-      result = Seeds.bootstrap_admin!(password: override_password, email: override_email)
-      unless result[:ok]
-        halt 400, result[:error]
-      end
-
-      content_type "text/plain"
-      status result[:auth_ok] ? 200 : 500
-      password_hint = if override_password
-                        "Use the password you passed in ?password= on this URL."
-                      else
-                        "ADMIN_PASSWORD is not reaching the app reliably. Prefer ?password=YourNewPassword123 on this URL."
-                      end
-      <<~TEXT
-        Admin account synced for #{result[:email]}.
-        Login self-test: #{result[:auth_ok] ? "PASSED" : "FAILED"}
-
-        Log in at /login with:
-          Email: #{result[:email]}
-          #{password_hint}
-
-        Remove BOOTSTRAP_TOKEN from env after you can log in.
-      TEXT
-    end
-
     get "/login" do
       redirect "/" if logged_in?
       @return_to = params[:return].to_s
@@ -216,6 +177,37 @@ module ManualVectorizer
     post "/logout" do
       session.clear
       redirect "/login"
+    end
+
+    get "/account" do
+      require_login!
+      @success = params[:updated] == "1"
+      erb :account, layout: :layout
+    end
+
+    post "/account/password" do
+      require_login!
+      current_password = params[:current_password].to_s
+      new_password = params[:new_password].to_s
+      confirmation = params[:new_password_confirmation].to_s
+
+      unless User.authenticate(current_user.email, current_password)
+        @error = "Current password is incorrect"
+        return erb :account, layout: :layout
+      end
+
+      if new_password.length < 8
+        @error = "New password must be at least 8 characters"
+        return erb :account, layout: :layout
+      end
+
+      if new_password != confirmation
+        @error = "New passwords do not match"
+        return erb :account, layout: :layout
+      end
+
+      current_user.set_password!(new_password)
+      redirect "/account?updated=1"
     end
 
     # --- App pages (auth required) ---

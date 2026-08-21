@@ -26,6 +26,11 @@ async function initAuthNav() {
       links.appendChild(admin);
     }
 
+    const account = document.createElement("a");
+    account.href = "/account";
+    account.textContent = "Account";
+    links.appendChild(account);
+
     const logoutForm = document.createElement("form");
     logoutForm.method = "post";
     logoutForm.action = "/logout";
