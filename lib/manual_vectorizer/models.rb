@@ -115,12 +115,15 @@ module ManualVectorizer
 
   class VectorSheet < Sequel::Model
     plugin :timestamps, update_on_create: true
-    plugin :serialization, :json, :definition
 
     many_to_one :owner, class: :User, key: :owner_id
     many_to_one :forked_from, class: "ManualVectorizer::VectorSheet", key: :forked_from_id
     one_to_many :revisions, class: "ManualVectorizer::SheetRevision", key: :sheet_id
     one_to_many :log_entries, class: "ManualVectorizer::VectorLogEntry", key: :sheet_id
+
+    def definition
+      JsonColumn.parse(self[:definition])
+    end
 
     def before_create
       self.created_at ||= Time.now
@@ -186,39 +189,36 @@ module ManualVectorizer
   end
 
   class UserWorkspace < Sequel::Model
-    plugin :serialization, :json, :draft_state
-
     many_to_one :user
     many_to_one :active_sheet, class: "ManualVectorizer::VectorSheet", key: :active_sheet_id
 
     def parsed_draft
       base = UserState::DEFAULT_STATE.dup
-      parsed = draft_state.is_a?(Hash) ? draft_state : {}
+      parsed = JsonColumn.parse(self[:draft_state])
       base.merge(parsed)
     end
   end
 
   class SheetRevision < Sequel::Model
-    plugin :serialization, :json, :definition
-
     many_to_one :sheet, class: "ManualVectorizer::VectorSheet", key: :sheet_id
     many_to_one :user
   end
 
   class VectorLogEntry < Sequel::Model
     plugin :timestamps, update_on_create: true
-    plugin :serialization, :json, :ranking
-    plugin :serialization, :json, :sheet_snapshot
 
     many_to_one :user
     many_to_one :sheet, class: "ManualVectorizer::VectorSheet", key: :sheet_id
 
     def ranking_data
-      ranking.is_a?(Hash) ? ranking : {}
+      JsonColumn.parse(self[:ranking])
     end
 
     def sheet_snapshot_data
-      sheet_snapshot.is_a?(Hash) ? sheet_snapshot : nil
+      raw = self[:sheet_snapshot]
+      return nil if raw.nil?
+
+      JsonColumn.parse(raw)
     end
 
     def readable_by?(user)

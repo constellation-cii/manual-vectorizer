@@ -15,6 +15,7 @@ module ManualVectorizer
     Sequel::Model.db = Database.connect!
 
     require_relative "models"
+    require_relative "json_column"
     require_relative "sheet_definition"
     require_relative "sheet_merge"
     require_relative "ranking_import"
