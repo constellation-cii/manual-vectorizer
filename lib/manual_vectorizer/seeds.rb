@@ -17,9 +17,25 @@ module ManualVectorizer
     end
 
     def bootstrap_admin!
-      email = ENV.fetch("ADMIN_EMAIL", "admin@example.com")
+      email = ENV.fetch("ADMIN_EMAIL", "admin@example.com").to_s.strip.downcase
       password = ENV.fetch("ADMIN_PASSWORD", "changeme-admin")
-      return if User.find(email: email.downcase)
+      return if email.empty? || password.empty?
+
+      user = User.find(email: email)
+      if user
+        user.set_password!(password)
+        user.update(role: "admin") unless user.admin?
+        puts "Synced admin credentials for #{email}"
+        return
+      end
+
+      existing_admin = User.where(role: "admin").first
+      if existing_admin
+        existing_admin.update(email: email)
+        existing_admin.set_password!(password)
+        puts "Updated admin account to #{email}"
+        return
+      end
 
       User.create_account!(email: email, password: password, role: "admin")
       puts "Created admin user #{email}"

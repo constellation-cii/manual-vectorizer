@@ -31,6 +31,10 @@ module ManualVectorizer
       user
     end
 
+    def set_password!(password)
+      update(password_digest: BCrypt::Password.create(password))
+    end
+
     def self.create_account!(email:, password:, role: "user")
       create(
         email: email.to_s.strip.downcase,
