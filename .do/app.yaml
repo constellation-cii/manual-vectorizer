@@ -24,7 +24,7 @@ services:
       branch: main
       deploy_on_push: true
     source_dir: /
-    run_command: bundle exec rake db:migrate && bundle exec rake db:seed && bundle exec puma -C config/puma.rb
+    run_command: bundle exec puma -C config/puma.rb
     http_port: 8080
     instance_count: 1
     instance_size_slug: basic-xxs
