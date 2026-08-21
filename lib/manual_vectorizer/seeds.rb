@@ -22,6 +22,7 @@ module ManualVectorizer
       end
 
       bootstrap_catalog!
+      WorkspaceService.ensure_master_sheet!
     end
 
     # Boot-time only: create the first admin account. Never overwrite passwords.
@@ -42,7 +43,8 @@ module ManualVectorizer
         return { ok: true, email: existing_admin.email, created: false }
       end
 
-      User.create_account!(email: email, password: password, role: "admin")
+      user = User.create_account!(email: email, password: password, role: "admin")
+      WorkspaceService.provision_user!(user)
       { ok: true, email: email, created: true }
     end
 

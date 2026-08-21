@@ -1,8 +1,22 @@
-/** Header user menu + logout for authenticated pages. */
+/** Header user menu, sheet switcher, and tool nav. */
+
+import { initSheetSwitcher, addToolNav } from "./sheets-nav.js";
 
 async function initAuthNav() {
   const nav = document.querySelector("header nav");
-  if (!nav || nav.querySelector(".auth-nav")) return;
+  if (!nav) return;
+
+  addToolNav(nav);
+
+  const header = document.querySelector("header");
+  if (header && !header.querySelector(".sheet-switcher-host")) {
+    const host = document.createElement("div");
+    host.className = "sheet-switcher-host";
+    header.appendChild(host);
+    initSheetSwitcher(host);
+  }
+
+  if (nav.querySelector(".auth-nav")) return;
 
   try {
     const res = await fetch("/api/me", { credentials: "same-origin" });
