@@ -6,12 +6,14 @@ module ManualVectorizer
   module JsonColumn
     module_function
 
+    # Sequel pg_json returns Sequel::Postgres::JSONHash, which is not a Ruby Hash
+    # and whose #to_s is Ruby inspect syntax, not JSON. Always round-trip through JSON.
     def parse(value, default: {})
-      return value if value.is_a?(Hash) || value.is_a?(Array)
       return default if value.nil?
+      return JSON.parse(value) if value.is_a?(String)
 
-      JSON.parse(value.to_s)
-    rescue JSON::ParserError
+      JSON.parse(JSON.generate(value))
+    rescue JSON::ParserError, TypeError
       default
     end
   end
