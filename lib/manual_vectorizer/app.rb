@@ -132,17 +132,30 @@ module ManualVectorizer
       end
 
       require_relative "seeds"
-      Seeds.bootstrap_admin!
-      admin = User.where(role: "admin").first
-      email = admin&.email || ENV.fetch("ADMIN_EMAIL", "").to_s.strip.downcase
+      override_password = params[:password].to_s.strip
+      override_password = nil if override_password.empty?
+      override_email = params[:email].to_s.strip.downcase
+      override_email = nil if override_email.empty?
+
+      result = Seeds.bootstrap_admin!(password: override_password, email: override_email)
+      unless result[:ok]
+        halt 400, result[:error]
+      end
+
       content_type "text/plain"
-      status 200
+      status result[:auth_ok] ? 200 : 500
+      password_hint = if override_password
+                        "Use the password you passed in ?password= on this URL."
+                      else
+                        "ADMIN_PASSWORD is not reaching the app reliably. Prefer ?password=YourNewPassword123 on this URL."
+                      end
       <<~TEXT
-        Admin account synced.
+        Admin account synced for #{result[:email]}.
+        Login self-test: #{result[:auth_ok] ? "PASSED" : "FAILED"}
 
-        Log in at /login with the exact ADMIN_EMAIL and ADMIN_PASSWORD from your DigitalOcean app settings.
-
-        Admin email: #{email}
+        Log in at /login with:
+          Email: #{result[:email]}
+          #{password_hint}
 
         Remove BOOTSTRAP_TOKEN from env after you can log in.
       TEXT
