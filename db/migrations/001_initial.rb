@@ -27,6 +27,7 @@ Sequel.migration do
       column :data, :json, null: false
       TrueClass :active, null: false, default: false
       DateTime :created_at, null: false
+      index :active
     end
 
     create_table(:user_states) do
@@ -35,8 +36,5 @@ Sequel.migration do
       column :state, :json, null: false, default: "{}"
       DateTime :updated_at, null: false
     end
-
-    create_index :invite_codes, :code, unique: true
-    create_index :catalog_snapshots, :active
   end
 end
