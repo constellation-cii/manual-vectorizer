@@ -50,7 +50,9 @@ module ManualVectorizer
         name: definition.dig("meta", "name") || "Type Grid Master",
         definition: definition
       )
-      puts "Rebuilt master sheet (#{master.definition['vectors'].length} vectors, #{master.definition['types'].length} types)"
+      vector_count = definition["vectors"]&.length || 0
+      type_count = definition["types"]&.length || 0
+      puts "Rebuilt master sheet (#{vector_count} vectors, #{type_count} types)"
       master
     end
 
