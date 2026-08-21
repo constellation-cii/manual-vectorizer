@@ -6,9 +6,12 @@ require "json"
 require "securerandom"
 
 require_relative "database"
-require_relative "models"
 
 module ManualVectorizer
+  Database.connect
+  Sequel::Model.db = Database.connect
+
+  require_relative "models"
   class App < Sinatra::Base
     helpers Sinatra::ContentFor
 
@@ -24,8 +27,6 @@ module ManualVectorizer
 
         "dev-session-secret-change-me"
       end
-      Database.connect
-      Sequel::Model.db = Database.connect
     end
 
     before do
