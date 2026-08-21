@@ -34,7 +34,7 @@ module ManualVectorizer
         return
       end
 
-      data = JSON.parse(File.read(path))
+      data = JSON.parse(File.read(path, encoding: "UTF-8"))
       CatalogSnapshot.publish!(data, label: "initial")
       puts "Seeded catalog from data/catalog.json"
     end
