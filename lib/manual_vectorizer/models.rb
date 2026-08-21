@@ -148,6 +148,13 @@ module ManualVectorizer
       false
     end
 
+    def deletable_by?(user)
+      return true if user.admin?
+      return false if is_master
+
+      owner_id == user.id
+    end
+
     def update_definition!(new_definition, user:, summary: "Updated sheet")
       SheetDefinition.compute_hashes!(new_definition)
       fp = SheetDefinition.fingerprint(new_definition)

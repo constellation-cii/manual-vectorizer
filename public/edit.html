@@ -15,7 +15,6 @@
       <a href="/results.html">Results</a>
       <a href="/edit.html" class="active">Edit</a>
       <a href="/log.html">Log</a>
-      <a href="/merge.html">Merge</a>
     </nav>
   </header>
 
@@ -30,6 +29,7 @@
         <button type="button" class="btn" id="validate-btn">Validate</button>
         <button type="button" class="btn" id="import-btn">Import file</button>
         <button type="button" class="btn" id="export-btn">Export bundle</button>
+        <button type="button" class="btn btn-danger" id="delete-btn" hidden>Delete sheet</button>
         <button type="button" class="btn btn-primary" id="save-btn">Save</button>
       </div>
     </div>
@@ -48,6 +48,24 @@
         <pre id="validation-output" class="validation-output">Run validate to check duplicates and similarity.</pre>
       </section>
     </div>
+
+    <section class="editor-panel editor-panel-wide" id="merge">
+      <h3>Merge guest sheet</h3>
+      <p class="auth-lead">Import a sheet bundle or YAML into the active sheet, preview conflicts, then apply.</p>
+      <div class="editor-actions">
+        <input type="file" id="guest-file" accept=".json,.yaml,.yml" />
+        <label><input type="checkbox" id="overwrite-descriptions" /> Overwrite descriptions on match</label>
+        <select id="conflict-policy">
+          <option value="">Prompt per conflict (preview only)</option>
+          <option value="skip_all">Skip all description conflicts</option>
+          <option value="yes_all">Yes to all description conflicts</option>
+        </select>
+        <button type="button" class="btn" id="preview-btn">Preview merge</button>
+        <button type="button" class="btn btn-primary" id="apply-btn">Apply merge</button>
+      </div>
+      <textarea id="type-map" rows="4" placeholder='Type map JSON e.g. {"guest-type-id": {"mbti":"INTJ","development":"SD"}}'></textarea>
+      <pre id="merge-report" class="validation-output">Load a guest sheet to preview.</pre>
+    </section>
   </main>
 
   <input type="file" id="import-file" accept=".json,.yaml,.yml" hidden />

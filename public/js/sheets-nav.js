@@ -34,6 +34,16 @@ export async function createSheet(name, forkFromId = null) {
   return res.json();
 }
 
+export async function deleteSheet(sheetId) {
+  const res = await fetch(`/api/sheets/${sheetId}`, {
+    method: "DELETE",
+    credentials: "same-origin",
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || `delete HTTP ${res.status}`);
+  return data;
+}
+
 export function initSheetSwitcher(container) {
   if (!container || container.querySelector(".sheet-switcher")) return;
 
@@ -88,7 +98,6 @@ export function addToolNav(nav) {
   const links = [
     { href: "/edit.html", text: "Edit" },
     { href: "/log.html", text: "Log" },
-    { href: "/merge.html", text: "Merge" },
   ];
   for (const { href, text } of links) {
     const a = document.createElement("a");

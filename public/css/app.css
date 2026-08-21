@@ -1386,6 +1386,28 @@ div.export-fallback.is-open {
   margin: 0 auto;
 }
 
+.editor-panel-wide {
+  margin-top: 1rem;
+  grid-column: 1 / -1;
+}
+
+.editor-page .editor-panel-wide#merge textarea#type-map {
+  width: 100%;
+  margin: 0.75rem 0;
+  font-family: ui-monospace, monospace;
+  font-size: 0.8rem;
+}
+
+.btn-danger {
+  background: var(--negative-bg);
+  border: 1px solid var(--negative);
+  color: var(--negative);
+}
+
+.btn-danger:hover {
+  background: rgba(240, 113, 120, 0.25);
+}
+
 .editor-toolbar {
   display: flex;
   flex-wrap: wrap;

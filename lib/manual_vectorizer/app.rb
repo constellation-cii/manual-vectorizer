@@ -240,7 +240,7 @@ module ManualVectorizer
 
     get "/merge.html" do
       require_login!
-      send_file File.join(settings.public_folder, "merge.html")
+      redirect "/edit.html#merge"
     end
 
     get "/results.html" do

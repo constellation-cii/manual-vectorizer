@@ -83,6 +83,28 @@ module ManualVectorizer
       sheet
     end
 
+    def delete_sheet!(user, sheet)
+      raise Sequel::NoMatchingRow unless sheet.deletable_by?(user)
+
+      master = VectorSheet.master_sheet
+      sheet_id = sheet.id
+
+      db = VectorSheet.db
+      db.transaction do
+        UserWorkspace.where(active_sheet_id: sheet_id).each do |workspace|
+          replacement = VectorSheet.where(owner_id: workspace.user_id)
+                                   .exclude(id: sheet_id)
+                                   .order(Sequel.desc(:updated_at))
+                                   .first
+          replacement ||= master
+          workspace.update(active_sheet_id: replacement&.id, updated_at: Time.now)
+        end
+
+        ResourceShare.where(resource_type: "sheet", resource_id: sheet_id).delete
+        sheet.destroy
+      end
+    end
+
     def save_draft!(user, state)
       workspace = workspace_for(user)
       workspace.update(draft_state: state, updated_at: Time.now)

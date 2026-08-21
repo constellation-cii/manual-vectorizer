@@ -36,9 +36,8 @@ Each user works with one **active sheet** at a time (switch via header dropdown)
 
 | Page | Purpose |
 |------|---------|
-| `/edit.html` | Edit sheet definition (JSON/YAML), reorder vectors, validate duplicates/similarity |
+| `/edit.html` | Edit sheet definition, merge guest sheets, validate, import/export |
 | `/log.html` | Save speaker rankings with source notes; share logs by email |
-| `/merge.html` | Merge a guest sheet bundle into the active sheet with type mapping |
 
 - **Master sheet** — canonical Type Grid Master row in Postgres; admins can edit it via `/edit.html` when selected; new users fork from it.
 - **Export/import** — full sheet bundles via Edit page or `GET /api/sheets/:id/export` and `POST /api/sheets/import`.
@@ -66,6 +65,7 @@ Spec: [`.do/app.yaml`](.do/app.yaml)
 | GET/PUT | `/api/session` | Workspace draft state |
 | GET | `/api/sheets` | List accessible sheets |
 | GET/PUT | `/api/sheets/:id` | Load/save sheet definition |
+| DELETE | `/api/sheets/:id` | Delete sheet (owner or admin) |
 | POST | `/api/sheets/:id/validate` | Duplicates + similarity report |
 | GET | `/api/sheets/:id/export` | Sheet bundle export |
 | POST | `/api/sheets/import` | Import sheet bundle |

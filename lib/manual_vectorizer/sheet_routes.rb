@@ -59,6 +59,26 @@ module ManualVectorizer
         json_error("Invalid JSON body")
       end
 
+      app.delete "/api/sheets/:id" do
+        require_login!
+        sheet = VectorSheet.accessible_by(current_user).first(id: params[:id].to_i)
+        halt 404, json_error("Not found", status: 404) unless sheet
+        halt 403, json_error("Cannot delete this sheet", status: 403) unless sheet.deletable_by?(current_user)
+
+        was_active = WorkspaceService.active_sheet_for(current_user).id == sheet.id
+        WorkspaceService.delete_sheet!(current_user, sheet)
+        fallback = WorkspaceService.active_sheet_for(current_user)
+        json_ok({
+          ok: true,
+          deleted_id: params[:id].to_i,
+          active_sheet_id: fallback&.id,
+          active_sheet_name: fallback&.name,
+          switched: was_active
+        })
+      rescue Sequel::NoMatchingRow
+        json_error("Cannot delete this sheet", status: 403)
+      end
+
       app.get "/api/sheets/:id" do
         require_login!
         sheet = VectorSheet.accessible_by(current_user).first(id: params[:id].to_i)
@@ -286,6 +306,7 @@ module ManualVectorizer
           is_master: sheet.is_master,
           owner_id: sheet.owner_id,
           writable: sheet.writable_by?(user),
+          deletable: sheet.deletable_by?(user),
           updated_at: sheet.updated_at
         }
       end
