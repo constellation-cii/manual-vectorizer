@@ -32,6 +32,7 @@ body {
   color: var(--text);
   line-height: 1.5;
   min-height: 100vh;
+  overflow-x: clip;
 }
 
 a {
@@ -55,25 +56,34 @@ header {
   position: sticky;
   top: 0;
   z-index: 100;
+  max-width: 100%;
 }
 
 header h1 {
   margin: 0;
   font-size: 1.25rem;
   font-weight: 600;
+  flex: 0 1 auto;
+  min-width: 0;
 }
 
 header nav {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.5rem 0.75rem;
   margin-left: auto;
+  flex: 1 1 12rem;
+  min-width: 0;
+  justify-content: flex-end;
 }
 
 header nav a {
   padding: 0.35rem 0.75rem;
   border-radius: var(--radius);
   background: var(--surface-2);
+  white-space: nowrap;
+  flex: 0 0 auto;
 }
 
 header nav a.active {
@@ -1050,6 +1060,42 @@ div.export-fallback.is-open {
 }
 
 @media (max-width: 640px) {
+  header {
+    padding: 0.75rem 1rem;
+    gap: 0.75rem;
+  }
+
+  header h1 {
+    flex: 1 1 100%;
+  }
+
+  header nav {
+    width: 100%;
+    margin-left: 0;
+    justify-content: flex-start;
+  }
+
+  .auth-nav {
+    margin-left: 0;
+    width: 100%;
+  }
+
+  .auth-nav-email {
+    flex: 1 1 100%;
+  }
+
+  .sheet-switcher-host {
+    width: 100%;
+    margin-left: 0;
+    margin-right: 0;
+    justify-content: flex-start;
+  }
+
+  .sheet-switcher-select {
+    flex: 1 1 8rem;
+    max-width: none;
+  }
+
   .toolbar .btn {
     min-height: 44px;
     touch-action: manipulation;
@@ -1213,17 +1259,25 @@ div.export-fallback.is-open {
 .auth-nav {
   margin-left: auto;
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.5rem 0.75rem;
   font-size: 0.85rem;
+  flex: 0 1 auto;
+  min-width: 0;
 }
 
 .auth-nav-email {
   color: var(--text-muted);
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .auth-nav-links {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 0.5rem;
 }
@@ -1254,20 +1308,27 @@ div.export-fallback.is-open {
 
 .sheet-switcher-host {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   margin-left: auto;
   margin-right: 1rem;
+  flex: 1 1 10rem;
+  min-width: 0;
+  justify-content: flex-end;
 }
 
 .sheet-switcher {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 0.35rem;
   font-size: 0.85rem;
+  max-width: 100%;
 }
 
 .sheet-switcher-select {
-  max-width: 12rem;
+  max-width: min(12rem, 100%);
+  min-width: 0;
 }
 
 .btn-sm {
