@@ -73,6 +73,10 @@ module ManualVectorizer
   end
 
   class CatalogSnapshot < Sequel::Model
+    def catalog_data
+      JsonColumn.parse(self[:data])
+    end
+
     def self.active_catalog
       where(active: true).order(Sequel.desc(:id)).first
     end

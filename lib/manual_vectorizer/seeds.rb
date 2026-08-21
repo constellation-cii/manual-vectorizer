@@ -22,7 +22,7 @@ module ManualVectorizer
       end
 
       bootstrap_catalog!
-      WorkspaceService.ensure_master_sheet!
+      WorkspaceService.rebuild_master_sheet!
     end
 
     # Boot-time only: create the first admin account. Never overwrite passwords.
@@ -76,7 +76,11 @@ module ManualVectorizer
     end
 
     def bootstrap_catalog!
-      return if CatalogSnapshot.active_catalog
+      existing = CatalogSnapshot.active_catalog
+      if existing
+        data = existing.catalog_data
+        return if data["skills"]&.any?
+      end
 
       path = File.expand_path("../../data/catalog.json", __dir__)
       unless File.exist?(path)

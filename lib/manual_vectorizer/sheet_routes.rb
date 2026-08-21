@@ -179,6 +179,17 @@ module ManualVectorizer
         json_error("Invalid JSON body")
       end
 
+      app.post "/api/admin/rebuild-master" do
+        require_admin!
+        master = WorkspaceService.rebuild_master_sheet!(force: true)
+        json_ok({
+          id: master.id,
+          name: master.name,
+          vectors: master.definition["vectors"]&.length,
+          types: master.definition["types"]&.length
+        })
+      end
+
       app.post "/api/admin/master-sheet" do
         require_admin!
         body = parse_sheet_body(request)

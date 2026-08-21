@@ -21,23 +21,48 @@ module ManualVectorizer
     end
 
     def ensure_master_sheet!
+      rebuild_master_sheet!
+    end
+
+    def rebuild_master_sheet!(force: false)
+      catalog_data = load_catalog_source
+      expected_vectors = catalog_data["skills"]&.length || 0
+      expected_types = catalog_data["types"]&.length || 0
       existing = VectorSheet.master_sheet
-      if existing && existing.definition["vectors"]&.any?
-        return existing
+
+      unless force
+        if existing
+          vectors = existing.definition["vectors"] || []
+          types = existing.definition["types"] || []
+          return existing if vectors.length >= [expected_vectors - 5, 100].max &&
+                             types.length >= [expected_types - 5, 50].max
+        end
       end
 
       existing&.delete
 
-      catalog = CatalogSnapshot.active_catalog
-      definition = if catalog
-                     ManualVectorizer::SheetDefinition.from_catalog(catalog.data, name: "Type Grid Master", description: "Canonical type grid sheet")
-                   else
-                     path = File.expand_path("../../data/catalog.json", __dir__)
-                     raw = JSON.parse(File.read(path, encoding: "UTF-8"))
-                     ManualVectorizer::SheetDefinition.from_catalog(raw, name: "Type Grid Master", description: "Canonical type grid sheet")
-                   end
+      definition = ManualVectorizer::SheetDefinition.from_catalog(
+        catalog_data,
+        name: "Type Grid Master",
+        description: "Canonical type grid sheet"
+      )
+      master = VectorSheet.create_master!(
+        name: definition.dig("meta", "name") || "Type Grid Master",
+        definition: definition
+      )
+      puts "Rebuilt master sheet (#{master.definition['vectors'].length} vectors, #{master.definition['types'].length} types)"
+      master
+    end
 
-      VectorSheet.create_master!(name: definition.dig("meta", "name") || "Type Grid Master", definition: definition)
+    def load_catalog_source
+      snap = CatalogSnapshot.active_catalog
+      if snap
+        data = snap.catalog_data
+        return data if data["skills"]&.any?
+      end
+
+      path = File.expand_path("../../data/catalog.json", __dir__)
+      JSON.parse(File.read(path, encoding: "UTF-8"))
     end
 
     def fork_sheet_for_user!(user, source_sheet, name: nil)
@@ -100,7 +125,7 @@ module ManualVectorizer
     end
 
     def migrate_legacy_users!
-      ensure_master_sheet!
+      WorkspaceService.rebuild_master_sheet!
       User.each do |user|
         next if UserWorkspace.find(user_id: user.id)
 
