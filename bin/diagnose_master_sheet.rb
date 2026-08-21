@@ -4,14 +4,9 @@
 require "json"
 require "sequel"
 
-require_relative "../lib/manual_vectorizer/database"
-require_relative "../lib/manual_vectorizer/models"
-require_relative "../lib/manual_vectorizer/sheet_definition"
+db = Sequel.connect(ENV.fetch("DATABASE_URL"))
+db.extension :pg_json
 
-ManualVectorizer::Database.connect!
-Sequel::Model.db = ManualVectorizer::Database.connect!
-
-db = Sequel::Model.db
 master = db[:vector_sheets].where(is_master: true).order(Sequel.desc(:id)).first
 raise "no master row" unless master
 
@@ -25,19 +20,24 @@ raw = db.fetch(
 
 puts "RAW id=#{raw[:id]} jtype=#{raw[:jtype]} vec_len=#{raw[:vec_len]} type_len=#{raw[:type_len]} bytes=#{raw[:def_bytes]}"
 
-model = ManualVectorizer::VectorSheet[master[:id]]
-defn = model.definition
-puts "MODEL vectors=#{(defn['vectors'] || []).size} types=#{(defn['types'] || []).size} class=#{defn.class}"
+defn_raw = master[:definition]
+puts "ROW definition class=#{defn_raw.class} json_class=#{defn_raw.class.name}"
 
-catalog = ManualVectorizer::SheetDefinition.to_catalog(defn)
-puts "CATALOG skills=#{catalog['skills']&.size} types=#{catalog['types']&.size}"
+defn = case defn_raw
+       when Hash then defn_raw
+       when String then JSON.parse(defn_raw)
+       else JSON.parse(defn_raw.to_s)
+       end
+puts "PARSED vectors=#{(defn['vectors'] || defn[:vectors] || []).size}"
 
-admin = ManualVectorizer::User.find(role: "admin")
+admin = db[:users].where(role: "admin").first
 if admin
-  ws = ManualVectorizer::UserWorkspace.find(user_id: admin.id)
-  puts "ADMIN active_sheet_id=#{ws&.active_sheet_id} email=#{admin.email}"
-  if ws&.active_sheet_id
-    active = ManualVectorizer::VectorSheet[ws.active_sheet_id]
-    puts "ADMIN active name=#{active&.name} is_master=#{active&.is_master} vectors=#{(active&.definition&.dig('vectors') || []).size}"
+  ws = db[:user_workspaces].where(user_id: admin[:id]).first
+  puts "ADMIN active_sheet_id=#{ws&.dig(:active_sheet_id)} email=#{admin[:email]}"
+  if ws && ws[:active_sheet_id]
+    active = db[:vector_sheets].where(id: ws[:active_sheet_id]).first
+    adef = active[:definition]
+    ahash = adef.is_a?(Hash) ? adef : JSON.parse(adef.to_s)
+    puts "ADMIN active name=#{active[:name]} is_master=#{active[:is_master]} vectors=#{(ahash['vectors'] || []).size}"
   end
 end
