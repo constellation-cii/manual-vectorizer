@@ -2,6 +2,7 @@
 
 require "sinatra/base"
 require "sinatra/content_for"
+require "rack/utils"
 require "json"
 require "securerandom"
 
@@ -23,6 +24,12 @@ module ManualVectorizer
 
   class App < Sinatra::Base
     helpers Sinatra::ContentFor
+
+    helpers do
+      def h(value)
+        Rack::Utils.escape_html(value.to_s)
+      end
+    end
 
     set :root, File.expand_path("../..", __dir__)
     set :public_folder, File.join(root, "public")
